@@ -1,26 +1,60 @@
-<project>
-<target name="get-all">
-    <mkdir dir="lib" />
-    <nexus-get 
-        groupId="kafka" 
-        artifactId="kafka-clients"
-        version="3.1.0"
-        repo="gbr"
-        extension="jar" 
-        dest="lib" 
-    />
-</target>
-<macrodef name="nexus-get">
-    <attribute name="groupId"/>
-    <attribute name="artifactId"/>
-    <attribute name="version"/>
-    <attribute name="repo"/>
-    <attribute name="extension"/>
-    <attribute name="dest"/>
+<project name="gbr" basedir=".">
 
-    <sequential>
-        <get src="http://10.10.10.165:8082/repository/@{repo}/@{groupId}/@{artifactId}-@{version}.@{extension}" dest="@{dest}/@{artifactId}.@{extension}" usetimestamp="true" />
-    </sequential>
-</macrodef>
+<property name="build.compiler.args" value="-encoding UTF-8 -source 8 -target 8"/>
+<property file="build.properties" />
+
+<import file="nexus.xml" />
+
+ <path id="build.classpath">
+    <pathelement location="${lib_folder}/kafka-clients.jar"/>
+ </path>
+
+
+<presetdef name="javac">
+    <javac includeantruntime="false" />
+  </presetdef>
+
+<target name="clean">
+    <delete dir="${artifact.temp.output}"/>
+   <delete dir="${build.binDir}"/>
+   <delete dir="${build.ready}"/>
+
+</target>
+
+ <target name="compile" depends="get-deps" description="Compile the code">
+    <mkdir dir="${build.binDir}"/>
+    <javac destdir="${build.binDir}"
+	   
+           nowarn="false"
+           debug="true"
+           optimize="false"
+           deprecation="true"
+           target="1.8"
+           verbose="false"
+           fork="false"
+           source="1.8">
+      <compilerarg line="${build.compiler.args}"/>
+      <src>
+        <pathelement location="${build.srcDir}"/>
+      </src>
+      <classpath refid="build.classpath"/>
+    </javac>
+  </target>
+
+
+  <target name="package" depends="compile" description="Build artifact">
+    <property name="artifact.temp.output" value="${artifact.temp.output}/Kafka"/>
+    <mkdir dir="${artifact.temp.output}"/>
+
+    <jar destfile="${artifact.temp.output}/${build.finalJar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+      <zipfileset dir="${build.binDir}"/>
+    </jar>
+   <mkdir dir="${build.ready}"/>
+   <copy file="${artifact.temp.output}/${build.finalJar}" tofile="${build.ready}/kafka.jar"/>
+    <delete dir="${artifact.temp.output}"/>
+  </target>
+
+
+
 
 </project>

@@ -1,0 +1,19 @@
+<project>
+<target name="get-deps">
+    <mkdir dir="${lib_folder}" />
+    <nexus-get groupId="kafka" artifactId="kafka-clients" version="3.1.0" repo="gbr" extension="jar" dest="${lib_folder}" />
+</target>
+<macrodef name="nexus-get">
+    <attribute name="groupId"/>
+    <attribute name="artifactId"/>
+    <attribute name="version"/>
+    <attribute name="repo"/>
+    <attribute name="extension"/>
+    <attribute name="dest"/>
+
+    <sequential>
+        <get src="http://10.10.10.165:8082/repository/@{repo}/@{groupId}/@{artifactId}-@{version}.@{extension}" dest="@{dest}/@{artifactId}.@{extension}" usetimestamp="true" />
+    </sequential>
+</macrodef>
+
+</project>
